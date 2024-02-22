@@ -1,20 +1,37 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, BackgroundTasks
+import asyncio
 from models import *
 from database import *
+from routers import signup, verify
 
 app = FastAPI()
 
 
+app.include_router(signup.router)
+
+app.include_router(verify.router)
+
+
+
+# Schedule token expiry check to run every 24 hours
+TOKEN_EXPIRY_CHECK_INTERVAL = 24 * 60 * 60 # 24 hours in seconds
+
+@app.on_event("startup")
+async def startup_event():
+    background_tasks = BackgroundTasks()  # Create an instance of BackgroundTasks
+    asyncio.create_task(token_expiry_check(background_tasks))  # Pass background_tasks to token_expiry_check
+
+async def token_expiry_check(background_tasks: BackgroundTasks):
+    while True:
+        background_tasks.add_task(cleanup_expired_tokens)
+        await asyncio.sleep(TOKEN_EXPIRY_CHECK_INTERVAL)
+
+
+    
+
 @app.get("/")
 async def root():
     return {"message": "Hello World"}
-
-
-
-@app.get("/get_user_first_name/{user_id}")
-async def get_user_first_name_route(user_id: int):
-    first_name = get_user_first_name(user_id)
-    return {"user_id": user_id, "first_name": first_name}
 
 
 
@@ -32,13 +49,23 @@ async def login(credentials: UserCredentials):
         raise HTTPException(status_code=401, detail="Email does not exist")
 
 
-
+'''
 @app.post("/signup")
 async def signup(user_data: UserCreate):
     create_user(user_data)
     # Send verification email here
     
     return {"message": "Account created successfully"}
+
+    
+
+
+
+@app.get("/get_user_first_name/{user_id}")
+async def get_user_first_name_route(user_id: int):
+    first_name = get_user_first_name(user_id)
+    return {"user_id": user_id, "first_name": first_name}
+
 
 
 @app.put("/edit_name")
@@ -76,7 +103,7 @@ async def view_history_list(user_id: int):
 async def view_report(report_id: int):
     # Code to retrieve and return details of a specific report
     return {"report": "Report details"}
-
+'''
 
 '''
 users = []
