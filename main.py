@@ -6,9 +6,7 @@ from routers import signup, verify
 
 app = FastAPI()
 
-
 app.include_router(signup.router)
-
 app.include_router(verify.router)
 
 
@@ -50,17 +48,6 @@ async def login(credentials: UserCredentials):
 
 
 '''
-@app.post("/signup")
-async def signup(user_data: UserCreate):
-    create_user(user_data)
-    # Send verification email here
-    
-    return {"message": "Account created successfully"}
-
-    
-
-
-
 @app.get("/get_user_first_name/{user_id}")
 async def get_user_first_name_route(user_id: int):
     first_name = get_user_first_name(user_id)

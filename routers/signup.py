@@ -33,7 +33,7 @@ def send_verification_email(email: str, verification_token: str):
     sender_password = 'Rahaf995500'
 
     # Create verification link
-    verification_link = f"http://127.0.0.1:8000/verify?user_email={email}&token={verification_token}"
+    verification_link = f"https://maseerapi.onrender.com/verify?user_email={email}&token={verification_token}"
 
     # Create message container
     msg = MIMEMultipart()
