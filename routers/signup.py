@@ -16,7 +16,7 @@ async def signup(user_data: UserCreate):
         verification_token = ''.join(random.choices(string.ascii_letters + string.digits, k=10))  # Generate verification token
         create_user(user_data, verification_token)  # Pass verification token to create_user function
         # Send verification email
-        send_verification_email(user_data.email, verification_token)  # Pass the verification token
+        #send_verification_email(user_data.email, verification_token)  # Pass the verification token
         return {"message": "Account created successfully"}
     except HTTPException as e:
         return e

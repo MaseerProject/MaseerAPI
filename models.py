@@ -16,3 +16,17 @@ class UserCreate(BaseModel):
 
 class PhoneUpdate(BaseModel):
     new_phone_number: str
+
+class MailInfo(BaseModel):
+    email: str
+    otp_code: str
+
+
+class PasswordRecover(BaseModel):
+    email: str
+    password: str
+
+class PasswordUpdate(BaseModel):
+    user_id: int
+    old_password: str
+    new_pssword: str

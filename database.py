@@ -25,6 +25,16 @@ def get_user_by_email(email):
     conn.close()
     return user
 
+#------------------ get_user_by_id ---------------------
+def get_user_by_id(user_id):
+    conn = connect_to_mysql()
+    cursor = conn.cursor()
+    query = "SELECT User_ID, REPLACE (cast(aes_decrypt(`Password`, 'Maseer') as char(100)),`salt`,'') AS Password, User_ID FROM User_Account WHERE User_ID = %s"
+    cursor.execute(query, (user_id,))
+    user = cursor.fetchone()
+    cursor.close()
+    conn.close()
+    return user
 
 # ----------------- userdata --------------------
 def get_userData(user_id):
@@ -44,6 +54,40 @@ def update_phone_number(user_id: int, new_phone_number: str) -> bool:
     cursor = conn.cursor()
     query = "UPDATE User_Account SET Phone_Number = %s WHERE User_ID = %s"
     cursor.execute(query, (new_phone_number, user_id))
+    conn.commit()  # Commit the changes
+    rows_affected = cursor.rowcount  # Check the number of rows affected
+    cursor.close()
+    conn.close()
+
+    # If rows_affected is greater than 0, it means the record has been updated
+    return rows_affected > 0
+
+
+# ----------------- RecoverPassword --------------------
+def Recover_Password(email: str, Newpassword: str) -> bool:
+    salt = ''.join(random.choices(string.ascii_letters + string.digits, k=8))
+    password = Newpassword + salt
+    conn = connect_to_mysql()
+    cursor = conn.cursor()
+    query = "UPDATE User_Account SET Password = (aes_encrypt(%s,'Maseer')), salt = %s WHERE Email = %s"
+    cursor.execute(query, (password, salt, email))
+    conn.commit()  # Commit the changes
+    rows_affected = cursor.rowcount  # Check the number of rows affected
+    cursor.close()
+    conn.close()
+
+    # If rows_affected is greater than 0, it means the record has been updated
+    return rows_affected > 0
+
+
+# ----------------- UpdatePassword --------------------
+def Update_Password(user_id: int, Newpassword: str) -> bool:
+    salt = ''.join(random.choices(string.ascii_letters + string.digits, k=8))
+    password = Newpassword + salt
+    conn = connect_to_mysql()
+    cursor = conn.cursor()
+    query = "UPDATE User_Account SET Password = (aes_encrypt(%s,'Maseer')), salt = %s WHERE User_ID = %s"
+    cursor.execute(query, (password, salt, user_id))
     conn.commit()  # Commit the changes
     rows_affected = cursor.rowcount  # Check the number of rows affected
     cursor.close()
