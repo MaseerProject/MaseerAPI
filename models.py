@@ -13,3 +13,6 @@ class UserCreate(BaseModel):
     email: str
     phone_number: str
     password: str
+
+class PhoneUpdate(BaseModel):
+    new_phone_number: str

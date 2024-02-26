@@ -2,12 +2,17 @@ from fastapi import FastAPI, HTTPException, BackgroundTasks
 import asyncio
 from models import *
 from database import *
-from routers import signup, verify
+from routers import signup, verify, login, userdata, updatePhone, deleteAccount
 
 app = FastAPI()
 
 app.include_router(signup.router)
 app.include_router(verify.router)
+app.include_router(login.router)
+app.include_router(userdata.router)
+app.include_router(updatePhone.router)
+app.include_router(deleteAccount.router)
+
 
 
 
@@ -33,18 +38,7 @@ async def root():
 
 
 
-@app.post("/login")
-async def login(credentials: UserCredentials):
-    email = credentials.email
-    password = credentials.password
-    user = get_user_by_email(email)
-    if user:
-        if user[1] == password:
-            return {"message": "Login successful"}
-        else:
-            raise HTTPException(status_code=401, detail="Invalid password")
-    else:
-        raise HTTPException(status_code=401, detail="Email does not exist")
+
 
 
 '''

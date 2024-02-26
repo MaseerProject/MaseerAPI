@@ -14,11 +14,11 @@ def connect_to_mysql():
     conn = mysql.connector.connect(**config)
     return conn
 
-
+#------------------ login ---------------------
 def get_user_by_email(email):
     conn = connect_to_mysql()
     cursor = conn.cursor()
-    query = "SELECT Email, REPLACE (cast(aes_decrypt(`Password`, 'Maseer') as char(100)),`salt`,'') AS Password FROM User_Account WHERE Email = %s"
+    query = "SELECT Email, REPLACE (cast(aes_decrypt(`Password`, 'Maseer') as char(100)),`salt`,'') AS Password, User_ID FROM User_Account WHERE Email = %s"
     cursor.execute(query, (email,))
     user = cursor.fetchone()
     cursor.close()
@@ -26,8 +26,50 @@ def get_user_by_email(email):
     return user
 
 
+# ----------------- userdata --------------------
+def get_userData(user_id):
+    conn = connect_to_mysql()
+    cursor = conn.cursor()
+    query = "SELECT CONCAT(First_Name, ' ' , Last_Name) AS Name, Email, Phone_Number FROM User_Account WHERE User_ID = %s"
+    cursor.execute(query, (user_id,))
+    user_data = cursor.fetchone()
+    cursor.close()
+    conn.close()
+    return user_data
 
 
+# ----------------- updatePhone --------------------
+def update_phone_number(user_id: int, new_phone_number: str) -> bool:
+    conn = connect_to_mysql()
+    cursor = conn.cursor()
+    query = "UPDATE User_Account SET Phone_Number = %s WHERE User_ID = %s"
+    cursor.execute(query, (new_phone_number, user_id))
+    conn.commit()  # Commit the changes
+    rows_affected = cursor.rowcount  # Check the number of rows affected
+    cursor.close()
+    conn.close()
+
+    # If rows_affected is greater than 0, it means the record has been updated
+    return rows_affected > 0
+
+# ----------------- deleteAccount ---------------------
+def delete_user_account(user_id: int) -> bool:
+    conn = connect_to_mysql()
+    cursor = conn.cursor()
+    query = "DELETE FROM User_Account WHERE User_ID = %s"
+    cursor.execute(query, (user_id,))
+    conn.commit()  # Commit the changes
+    rows_affected = cursor.rowcount  # Check the number of rows affected
+    cursor.close()
+    conn.close()
+
+    # If rows_affected is greater than 0, it means the record has been deleted
+    return rows_affected > 0
+
+
+
+
+# ----------------- singup ---------------------
 def create_user(user_data, verification_token):
     salt = ''.join(random.choices(string.ascii_letters + string.digits, k=8))
     password = user_data.password + salt
@@ -94,5 +136,7 @@ def cleanup_expired_tokens():
     conn.commit()
     cursor.close()
     conn.close()
+
+
 
 
