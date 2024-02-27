@@ -29,7 +29,7 @@ class PasswordRecover(BaseModel):
 class PasswordUpdate(BaseModel):
     user_id: int
     old_password: str
-    new_pssword: str
+    new_password: str
 
 class Email (BaseModel):
     email: str

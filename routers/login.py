@@ -14,6 +14,6 @@ async def login(credentials: UserCredentials):
         if user[1] == password:
             return {"message": "Login_Successful", "token": user[2]}
         else:
-            raise HTTPException(status_code=401, detail="Invalid_Password")
+            raise HTTPException(status_code=402, detail="Invalid_Password")
     else:
         raise HTTPException(status_code=401, detail="Email_Not_Exist")
