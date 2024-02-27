@@ -30,3 +30,6 @@ class PasswordUpdate(BaseModel):
     user_id: int
     old_password: str
     new_pssword: str
+
+class Email (BaseModel):
+    email: str

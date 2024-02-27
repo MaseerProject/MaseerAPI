@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
-from models import UserCreate
-from database import create_user
+from models import UserCreate, Email
+from database import create_user, check_email
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -21,6 +21,13 @@ async def signup(user_data: UserCreate):
     except HTTPException as e:
         return e
 
+@router.post("/checkEmail")
+async def checkEmail(email: Email):
+    new_email = check_email(email.email)
+    if new_email:
+        return {"message": "The Email is new"}
+    else:
+        raise HTTPException(status_code=400, detail="Email already exists. Please use a different email.")
 
 
 

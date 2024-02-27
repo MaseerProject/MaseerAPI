@@ -6,10 +6,10 @@ from fastapi import HTTPException
 
 def connect_to_mysql():
     config = {
-        'host': 'bxfb9qeejqcypo9tdkjz-mysql.services.clever-cloud.com',
-        'user': 'u4xyd0naitnaz9bu',
-        'password': 'Cr4mnlqJ7InUlr55bbm3',
-        'database': 'bxfb9qeejqcypo9tdkjz',
+        'host': 'bi56y3fi8ksmipuyqbbg-mysql.services.clever-cloud.com',
+        'user': 'ucp8vo3cbzysdfot',
+        'password': '0SYQjw1Iv5VKFbkSyWms',
+        'database': 'bi56y3fi8ksmipuyqbbg',
     }
     conn = mysql.connector.connect(**config)
     return conn
@@ -113,6 +113,129 @@ def delete_user_account(user_id: int) -> bool:
 
 
 
+# ----------------- get_report_video ---------------------
+def get_report_video(report_id: int) -> bytearray:
+    conn = connect_to_mysql()
+    cursor = conn.cursor()
+
+    query = "SELECT (aes_decrypt(`Violation_Video`, 'Maseer')) FROM Reports WHERE Report_ID = %s"
+    cursor.execute(query, (report_id,))
+    video_data = cursor.fetchone()[0]
+
+    conn.close()
+
+    return video_data
+
+def get_report(report_id: int):
+    conn = connect_to_mysql()
+    cursor = conn.cursor()
+    query = """
+        SELECT
+            `Report_ID`,
+            `User_ID`,
+            `Generation_Date`,
+            `Name`,
+            `Phone_Number`,
+            `Violation_Type_ID`,
+            `Violation_Type_A_Des`,
+            `Violation_Type_E_Des`,
+            `Violation_Date`,
+            `Violation_Time`,
+            `Plate_Eng_No`,
+            `Plate_Arb_No`
+        FROM
+            `Reports_View`
+        WHERE
+            Report_ID = %s;
+    """
+    cursor.execute(query, (report_id,))
+    report_data = cursor.fetchone()
+    cursor.close()
+    conn.close()
+    return report_data
+
+def mark_report_as_visited(report_id: int):
+    conn = connect_to_mysql()
+    cursor = conn.cursor()
+    try:
+        # Update the visited column to 1 for the given report_id
+        update_query = "UPDATE Reports_View SET visited = 1 WHERE Report_ID = %s"
+        cursor.execute(update_query, (report_id,))
+        conn.commit()
+    except Exception as e:
+        conn.rollback()
+        raise e
+    finally:
+        cursor.close()
+        conn.close()
+
+def mark_report_as_visited(report_id: int) -> bool:
+    conn = connect_to_mysql()
+    cursor = conn.cursor()
+    query = "UPDATE Reports SET visited = 1 WHERE Report_ID = %s"
+    cursor.execute(query, (report_id,))
+    conn.commit()  # Commit the changes
+    rows_affected = cursor.rowcount  # Check the number of rows affected
+    cursor.close()
+    conn.close()
+
+    # If rows_affected is greater than 0, it means the record has been deleted
+    return rows_affected > 0
+
+# ----------------- userHistory ----------------
+def get_user_history(user_id: int):
+    conn = connect_to_mysql()
+    cursor = conn.cursor()
+    query = "SELECT `Report_ID`, `Generation_Date` , `Visited` FROM Reports_View WHERE `User_ID` = %s"
+    cursor.execute(query, (user_id,))
+    history_list = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return history_list
+
+
+# ----------------- deleteOneReport ------------
+def delete_report(report_id: int) -> bool:
+    conn = connect_to_mysql()
+    cursor = conn.cursor()
+    query = "DELETE FROM Reports WHERE `Report_ID` = %s"
+    cursor.execute(query, (report_id,))
+    conn.commit()  # Commit the changes
+    rows_affected = cursor.rowcount  # Check the number of rows affected
+    cursor.close()
+    conn.close()
+
+    # If rows_affected is greater than 0, it means the record has been deleted
+    return rows_affected > 0
+
+# ----------------- deleteOneReport ------------
+def delete_user_reports(user_id: int) -> bool:
+    conn = connect_to_mysql()
+    cursor = conn.cursor()
+    query = "DELETE FROM Reports WHERE `User_ID` = %s"
+    cursor.execute(query, (user_id,))
+    conn.commit()  # Commit the changes
+    rows_affected = cursor.rowcount  # Check the number of rows affected
+    cursor.close()
+    conn.close()
+
+    # If rows_affected is greater than 0, it means the record has been deleted
+    return rows_affected > 0
+
+# ----------------- checkEmail ---------------------
+def check_email(email: str) -> bool:
+    conn = connect_to_mysql()
+    cursor = conn.cursor()
+
+    # Check if the email already exists
+    email_check_query = "SELECT COUNT(*) FROM User_Account WHERE Email = %s"
+    cursor.execute(email_check_query, (email,))
+    email_exists = cursor.fetchone()[0]
+    cursor.close()
+    conn.close()
+    return email_exists == 0
+
+# **************************************************************
 # ----------------- singup ---------------------
 def create_user(user_data, verification_token):
     salt = ''.join(random.choices(string.ascii_letters + string.digits, k=8))

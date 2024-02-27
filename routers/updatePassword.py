@@ -14,6 +14,7 @@ async def updatePassword(passwordUpdate: PasswordUpdate):
                 return {"message":"password updated successfully"}
             else:
                 raise HTTPException(status_code=404, detail="User_Not_Found")
+        else: HTTPException(status_code=422, detail="Password_Not_Match")
     else:
         raise HTTPException(status_code=401, detail="Email_Not_Exist")
 
