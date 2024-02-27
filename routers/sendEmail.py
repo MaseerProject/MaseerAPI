@@ -19,15 +19,12 @@ async def sendVerificationEmail(MailInfo:MailInfo):
     
 @router.post("/sendPasswordRecoveryEmail")
 async def sendPasswordRecoveryEmail(MailInfo:MailInfo):
-    user = get_user_by_email(MailInfo.email)
-    if user:
-        try:
-            send_verification_email(MailInfo.email, MailInfo.otp_code, 'Password Recovery') # Pass the verification token
-            return {"message": "verification Email sent successfully"}
-        except HTTPException as e:
-            return e
-    else:
-        raise HTTPException(status_code=401, detail="Email_Not_Exist")
+    try:
+        send_verification_email(MailInfo.email, MailInfo.otp_code, 'Password Recovery') # Pass the verification token
+        return {"message": "verification Email sent successfully"}
+    except HTTPException as e:
+        return e
+
     
 
 

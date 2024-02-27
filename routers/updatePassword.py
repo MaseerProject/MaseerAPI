@@ -9,7 +9,7 @@ async def updatePassword(passwordUpdate: PasswordUpdate):
     user = get_user_by_id(passwordUpdate.user_id)
     if user:
         if user[1] == passwordUpdate.old_password:
-            Updated = Update_Password(passwordUpdate.user_id, passwordUpdate.new_pssword)
+            Updated = Update_Password(passwordUpdate.user_id, passwordUpdate.new_password)
             if Updated:
                 return {"message":"password updated successfully"}
             else:
