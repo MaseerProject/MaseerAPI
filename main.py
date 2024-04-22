@@ -2,7 +2,7 @@ from fastapi import FastAPI, HTTPException, BackgroundTasks
 import asyncio
 from models import *
 from database import *
-from routers import signup, verify, login, userdata, updatePhone, deleteAccount, sendEmail, PasswordRecover, updatePassword, report, historyList, deleteOneReport, deleteUserReports, uploadVideo
+from routers import signup, verify, login, userdata, updatePhone, deleteAccount, sendEmail, PasswordRecover, updatePassword, report, historyList, deleteOneReport, deleteUserReports, uploadVideo, uploadAnalyse
 app = FastAPI()
 
 app.include_router(signup.router)
@@ -19,6 +19,7 @@ app.include_router(historyList.router)
 app.include_router(deleteOneReport.router)
 app.include_router(deleteUserReports.router)
 app.include_router(uploadVideo.router)
+app.include_router(uploadAnalyse.router)
 
 
 # Schedule token expiry check to run every 24 hours
