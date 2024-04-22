@@ -1,0 +1,321 @@
+
+from fastapi import APIRouter, File, UploadFile
+
+#-------------
+#import requests
+import os
+
+from pydantic import BaseModel
+
+class VideoProcessRequest(BaseModel):
+    input_video_path: str
+    output_video_path: str
+#-------------
+
+
+router = APIRouter()
+
+@router.post("/uploadVideoA/")
+async def uploadVideo(user_video: UploadFile = File(...)):
+    # Save the uploaded video temporarily
+    file_path = f"/tmp/{user_video.filename}"
+    with open(file_path, "wb") as buffer:
+        buffer.write(await user_video.read())
+    
+    # Edit the video and save it
+    output_video_path = f"/tmp/edited_{user_video.filename}"
+    num_iterations = 5 #edit_video_save(file_path, output_video_path)
+    
+    # Delete the temporary input video file
+    os.remove(file_path)
+    
+    # Return the number of iterations and the filename
+    return {"filename": user_video.filename, "num_iterations": num_iterations}
+
+
+
+
+#----------------------------------------------
+@router.post("/uploadVideo1/")
+async def uploadVideo(user_video: UploadFile = File(...)):
+    contents = await user_video.read()
+    num_iterations = edit_video_a(contents)
+    # Save the file or trigger AI processing
+    return {"filename": user_video.filename, "num_iterations": num_iterations}
+
+
+
+
+
+
+async def process_video(contents):
+    import cv2
+    import numpy as np
+    # Convert the video contents into a numpy array
+    nparr = np.frombuffer(contents, np.uint8)
+    
+    # Decode the numpy array into a video using OpenCV
+    cap = cv2.VideoCapture()
+    success = cap.open('/content/temp_video.mp4', cv2.CAP_ANY)
+    
+    # Check if the video opened successfully
+    if not success:
+        print("Error: Could not open the video.")
+        return
+    
+    # Get the frame rate of the video
+    fps = cap.get(cv2.CAP_PROP_FPS)
+    
+    # Create a VideoWriter object to write the edited video
+    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+    out = cv2.VideoWriter('/content/output_video.mp4', fourcc, fps, (int(cap.get(3)), int(cap.get(4))), isColor=False)
+
+    # Process the video
+    frame_count = 0
+    while cap.isOpened():
+        ret, frame = cap.read()
+        if not ret:
+            break
+
+        # Increment frame count
+        frame_count += 1
+
+        # Skip first 20 frames
+        if frame_count >= 20:
+            # Convert the frame to grayscale
+            gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
+            # Write the grayscale frame to the output video
+            out.write(gray_frame)
+
+    # Release VideoCapture and VideoWriter
+    cap.release()
+    out.release()
+
+    print("Video editing complete.")
+
+    return '/content/output_video.mp4'
+
+#----------------------------------------------------------------------
+
+
+def edit_video_a(input_path, output_path):
+    import mysql.connector
+
+    # Database connection parameters
+    db_config = {
+            'host': 'bi56y3fi8ksmipuyqbbg-mysql.services.clever-cloud.com',
+            'user': 'ucp8vo3cbzysdfot',
+            'password': '0SYQjw1Iv5VKFbkSyWms',
+            'database': 'bi56y3fi8ksmipuyqbbg',
+    }
+
+    import cv2
+    import random
+
+    # Open the video file
+    cap = cv2.VideoCapture(input_path)
+
+    # Check if the video opened successfully
+    if not cap.isOpened():
+        print("Error: Could not open the video.")
+        return
+
+    # Get the frame rate of the video
+    fps = cap.get(cv2.CAP_PROP_FPS)
+
+    # Create a VideoWriter object
+    fourcc = cv2.VideoWriter_fourcc(*'mp4v')  # Codec to write the video
+    out = cv2.VideoWriter(output_path, fourcc, fps, (int(cap.get(3)), int(cap.get(4))), isColor=False)
+
+    # Process the video
+    frame_count = 0
+    while cap.isOpened():
+        ret, frame = cap.read()
+        if not ret:
+            break
+
+        # Increment frame count
+        frame_count += 1
+
+        # Skip first 20 frames
+        if frame_count >= 20:
+            break
+
+        # Convert the frame to grayscale
+        gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
+        # Write the grayscale frame to the output video
+        out.write(gray_frame)
+
+    # Release VideoCapture and VideoWriter
+    cap.release()
+    out.release()
+
+    print("Video editing complete.")
+
+    # Generate a random number between 0 and 2
+    num_iterations = random.randint(0, 2)
+    print (num_iterations)
+
+    for i in range(num_iterations):
+        # Video file path
+        video_file_path = '/content/output_video.mp4'
+
+        # Open the video file and read its content
+        with open(video_file_path, 'rb') as file:
+            video_data = file.read()
+
+        # Connect to the database
+        conn = mysql.connector.connect(**db_config)
+        cursor = conn.cursor()
+
+        # Insert the video data into a table
+        ##insert_query = "INSERT INTO Violation_Video (video_data) VALUES (aes_encrypt((%s),'Maseer'));"
+        #insert_query = "INSERT INTO Violation_Video (video_data) VALUES (%s);"
+        insert_query = '''
+        INSERT INTO `Reports`(`User_ID`, `Violation_Type_ID`, `Violation_Date`, `Violation_Time`, `Plate_Eng_No`, `Plate_Arb_No`, `Violation_Video`, `Visited`)
+        VALUES (%s, %s, %s, %s, %s, %s, aes_encrypt(%s, 'Maseer'), %s)
+        '''
+
+        cursor.execute(insert_query, (46, 1, '2024-02-21','19:28:41','ABS1235','١٢٣٤٥٦٧٨', video_data,0,))
+
+        # Commit the transaction
+        conn.commit()
+
+        # Close the database connection
+        conn.close()  
+
+    return num_iterations
+
+
+
+
+
+
+
+
+
+
+
+
+#------------------------------------------
+
+
+def edit_video_save(input_path, output_path):
+    import mysql.connector
+
+    # Database connection parameters
+    db_config = {
+            'host': 'bi56y3fi8ksmipuyqbbg-mysql.services.clever-cloud.com',
+            'user': 'ucp8vo3cbzysdfot',
+            'password': '0SYQjw1Iv5VKFbkSyWms',
+            'database': 'bi56y3fi8ksmipuyqbbg',
+    }
+
+    import cv2
+    import random
+
+    # Open the video file
+    cap = cv2.VideoCapture(input_path)
+
+    # Check if the video opened successfully
+    if not cap.isOpened():
+        print("Error: Could not open the video.")
+        return
+
+    # Get the frame rate of the video
+    fps = cap.get(cv2.CAP_PROP_FPS)
+
+    # Create a VideoWriter object
+    fourcc = cv2.VideoWriter_fourcc(*'mp4v')  # Codec to write the video
+    out = cv2.VideoWriter(output_path, fourcc, fps, (int(cap.get(3)), int(cap.get(4))), isColor=False)
+
+    # Process the video
+    frame_count = 0
+    while cap.isOpened():
+        ret, frame = cap.read()
+        if not ret:
+            break
+
+        # Increment frame count
+        frame_count += 1
+
+        # Skip first 20 frames
+        if frame_count >= 20:
+            break
+
+        # Convert the frame to grayscale
+        gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
+        # Write the grayscale frame to the output video
+        out.write(gray_frame)
+
+    # Release VideoCapture and VideoWriter
+    cap.release()
+    out.release()
+
+    print("Video editing complete.")
+
+    # Generate a random number between 0 and 2
+    num_iterations = random.randint(0, 2)
+    print (num_iterations)
+
+    for i in range(num_iterations):
+        # Video file path
+        video_file_path = '/content/output_video.mp4'
+
+        # Open the video file and read its content
+        with open(video_file_path, 'rb') as file:
+            video_data = file.read()
+
+        # Connect to the database
+        conn = mysql.connector.connect(**db_config)
+        cursor = conn.cursor()
+
+        # Insert the video data into a table
+        ##insert_query = "INSERT INTO Violation_Video (video_data) VALUES (aes_encrypt((%s),'Maseer'));"
+        #insert_query = "INSERT INTO Violation_Video (video_data) VALUES (%s);"
+        insert_query = '''
+        INSERT INTO `Reports`(`User_ID`, `Violation_Type_ID`, `Violation_Date`, `Violation_Time`, `Plate_Eng_No`, `Plate_Arb_No`, `Violation_Video`, `Visited`)
+        VALUES (%s, %s, %s, %s, %s, %s, aes_encrypt(%s, 'Maseer'), %s)
+        '''
+
+        cursor.execute(insert_query, (46, 1, '2024-02-21','19:28:41','ABS1235','١٢٣٤٥٦٧٨', video_data,0,))
+
+        # Commit the transaction
+        conn.commit()
+
+        # Close the database connection
+        conn.close()  
+
+    return num_iterations
+
+
+'''
+@router.post("/uploadVideo1/")
+async def uploadVideo(user_video: UploadFile = File(...)):
+    contents = await user_video.read()
+    # Save the file or trigger AI processing
+    return {"filename": user_video.filename}
+
+
+
+@router.post("/process_video/")
+async def process_video(req: VideoProcessRequest):
+    # Send request to Google Colab API
+    google_colab_api_url = "YOUR_GOOGLE_COLAB_API_ENDPOINT"
+    response = requests.post(google_colab_api_url, json=req.dict())
+    
+    if response.status_code == 200:
+        # Success, return the edited video path
+        return {"edited_video_path": response.json()["edited_video_path"]}
+    else:
+        # Handle error
+        return {"error": "Failed to process video"}
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
+
+'''
