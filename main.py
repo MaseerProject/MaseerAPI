@@ -6,7 +6,7 @@ from routers import signup, verify, login, userdata, updatePhone, deleteAccount,
 app = FastAPI()
 
 app.include_router(signup.router)
-app.include_router(verify.router)
+#app.include_router(verify.router)
 app.include_router(login.router)
 app.include_router(userdata.router)
 app.include_router(updatePhone.router)
@@ -17,9 +17,9 @@ app.include_router(updatePassword.router)
 app.include_router(report.router)
 app.include_router(historyList.router)
 app.include_router(deleteOneReport.router)
-app.include_router(deleteUserReports.router)
+#app.include_router(deleteUserReports.router)
 app.include_router(uploadVideo.router)
-app.include_router(uploadAnalyse.router)
+#app.include_router(uploadAnalyse.router)
 
 
 # Schedule token expiry check to run every 24 hours
@@ -38,9 +38,7 @@ async def token_expiry_check(background_tasks: BackgroundTasks):
 
     
 
-@app.get("/")
-async def root():
-    return {"message": "Hello World"}
+
 
 
 
@@ -48,6 +46,10 @@ async def root():
 
 
 '''
+@app.get("/")
+async def root():
+    return {"message": "Hello World"}
+
 @app.post("/upload_video")
 async def upload_video(user_id: int):
     # Code to handle video upload and storage
