@@ -1,13 +1,15 @@
+# Import necessary modules and functions
 from fastapi import APIRouter, HTTPException
 import smtplib
-from database import get_user_by_email
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from models import MailInfo
 
 
+# Create an instance of APIRouter
 router = APIRouter()
 
+# Define a POST route for sending verification email
 @router.post("/sendVerificationEmail")
 async def sendVerificationEmail(MailInfo:MailInfo):
 
@@ -16,7 +18,9 @@ async def sendVerificationEmail(MailInfo:MailInfo):
         return {"message": "verification Email sent successfully"}
     except HTTPException as e:
         return e
-    
+
+
+# Define a POST route for sending password recovery email
 @router.post("/sendPasswordRecoveryEmail")
 async def sendPasswordRecoveryEmail(MailInfo:MailInfo):
     try:
@@ -29,7 +33,7 @@ async def sendPasswordRecoveryEmail(MailInfo:MailInfo):
 
 
 
-
+# Function to send verification email
 def send_verification_email(email: int, otp_code: str, email_Subject: str):
     # Set up SMTP server details
     smtp_server = 'smtp.zoho.com'

@@ -1,6 +1,12 @@
-fastapi==0.70.0
-uvicorn==0.15.0
-mysql-connector-python==8.0.28
-python-multipart
+# Required packages for the FastAPI project
+fastapi==0.70.0                 # The FastAPI framework for building APIs with Python.
+uvicorn==0.15.0                 # ASGI server implementation, used to run FastAPI applications.
+mysql-connector-python==8.0.28  # MySQL connector for Python, used for connecting to MySQL databases.
+python-multipart                # Library for parsing multipart/form-data, used for file uploads in FastAPI.
 
-#pip install opencv-python-headless
+# Additional packages for specific functionalities
+ultralytics==8.0.114            # Possibly used for object detection tasks.
+opencv-python==4.7.0.72         # OpenCV library for computer vision tasks.
+easyocr==1.7.0                  # EasyOCR library for optical character recognition (OCR).
+Pillow==9.5.0                   # Python Imaging Library (PIL), used for image processing tasks.
+filterpy==1.4.5                 # Library for Kalman filtering and other state estimation algorithms.

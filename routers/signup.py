@@ -1,70 +1,33 @@
+# Import necessary modules and functions
 from fastapi import APIRouter, HTTPException
 from models import UserCreate, Email
 from database import create_user, check_email
-import smtplib
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
-import random
-import string
 
 
+
+# Create an instance of APIRouter
 router = APIRouter()
 
+# Define a POST route for user signup
 @router.post("/signup")
 async def signup(user_data: UserCreate):
     try:
-        verification_token = ''.join(random.choices(string.ascii_letters + string.digits, k=10))  # Generate verification token
-        create_user(user_data, verification_token)  # Pass verification token to create_user function
-        # Send verification email
-        #send_verification_email(user_data.email, verification_token)  # Pass the verification token
+        # Call the function to create user
+        create_user(user_data)  
         return {"message": "Account created successfully"}
     except HTTPException as e:
         return e
 
+
+# Define a POST route for checking email availability
 @router.post("/checkEmail")
 async def checkEmail(email: Email):
+
+    # Check if email exists
     new_email = check_email(email.email)
     if new_email:
         return {"message": "The Email is new"}
     else:
+        # If email already exists, raise an HTTPException with status code 400 
         raise HTTPException(status_code=400, detail="Email already exists. Please use a different email.")
 
-
-
-
-def send_verification_email(email: str, verification_token: str):
-    # Set up SMTP server details
-    smtp_server = 'smtp.zoho.com'
-    smtp_port = 465  # for SSL
-    sender_email = 'maseerproject@zohomail.com'
-    sender_password = 'Rahaf995500'
-
-    # Create verification link
-    verification_link = f"https://maseerapi.onrender.com/verify?user_email={email}&token={verification_token}"
-
-    # Create message container
-    msg = MIMEMultipart()
-    msg['From'] = sender_email
-    msg['To'] = email
-    msg['Subject'] = 'Verification Email'
-
-    # Compose message
-    message = f'''
-    Hello,
-
-    Thank you for signing up! Please click the link below to verify your email address:
-
-    {verification_link}
-
-    Regards,
-    Maseer App Team
-    '''
-
-    msg.attach(MIMEText(message, 'plain'))
-
-    # Connect to SMTP server and send email
-    with smtplib.SMTP_SSL(smtp_server, smtp_port) as server:
-        server.login(sender_email, sender_password)
-        server.sendmail(sender_email, email, msg.as_string())
-
-    print("Verification email sent successfully.")
